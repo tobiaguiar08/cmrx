@@ -683,6 +683,7 @@ class MapFile(TokenList):
         pattern_file = [ WHITE_SPACE, FILE_NAME, LEFT_BRACKET, SECTION_NAME, WHITE_SPACE, SECTION_NAME, RIGHT_BRACKET ]
         pattern_file_alt = [ WHITE_SPACE, FILE_NAME, LEFT_BRACKET, SECTION_NAME, RIGHT_BRACKET ]
         pattern_section = [ WHITE_SPACE, SECTION_NAME, WHITE_SPACE, NUMBER, WHITE_SPACE, NUMBER, WHITE_SPACE, FILE_NAME ]
+        pattern_output_section_synthetic = [ SECTION_NAME, NEWLINE ]
         pattern_section_broken = [ WHITE_SPACE, SECTION_NAME, NEWLINE, WHITE_SPACE, NUMBER, WHITE_SPACE, NUMBER, WHITE_SPACE, FILE_NAME ]
         pattern_fill = [ WHITE_SPACE, FILLER, WHITE_SPACE, NUMBER, WHITE_SPACE, NUMBER ]
         pattern_terminator = [ WHITE_SPACE, MULTIPLY, LEFT_BRACKET, SECTION_NAME, RIGHT_BRACKET ]
@@ -718,6 +719,14 @@ class MapFile(TokenList):
 #                        print("File expected to be `%s` but `%s` found" % (input_file, file))
                         continue
                     self.add_file_alloc(input_file, input_section, address, size)
+                if (self.match_pattern(q, pattern_output_section_synthetic)):
+                    # Output section begins
+                    input_file = None
+                    input_section = tokens[q].value
+                    address = 0
+                    size = 0
+#                    print("Synthetic section `%s` found!" % (input_section))
+
                 if (self.match_pattern(q, pattern_section_broken)):
                     address = tokens[q + 5].value
                     size = tokens[q + 7].value
@@ -751,7 +760,7 @@ class MapFile(TokenList):
         sect = self._get_file_section(file, section)
         sect.add_alloc(int(size, 16))
         
-#        print("%s(%s) %s:%s" % (file, section, base, size))
+        print("%s(%s) %s:%s" % (file, section, base, size))
 
     def add_filler(self, file, section, base, size):
         if (file is None):
@@ -760,7 +769,7 @@ class MapFile(TokenList):
         sect = self._get_file_section(file, section)
         sect.add_fill(int(size, 16))
 
-#        print("%s(%s) %s:%s ***" % (file, section, base, size))
+        print("%s(%s) %s:%s ***" % (file, section, base, size))
         pass
 
     def mpu_blocks(self, section):
